@@ -15,7 +15,7 @@ object OtusMethodsForTest {
       max("distance").as("max")
     )
 
-
+//
   def readParquet(path: String)(implicit spark: SparkSession): DataFrame = spark.read.load(path)
   def readCSV(path: String)(implicit spark: SparkSession):DataFrame =
     spark.read
