@@ -47,5 +47,10 @@ libraryDependencies ++= Seq(
   "org.apache.flink" % "flink-test-utils-junit" % flinkVersion,
   "org.apache.flink" %% "flink-test-utils" % flinkVersion,
   "org.apache.flink" %% "flink-streaming-java" % flinkVersion,
-  "org.apache.flink" %% "flink-runtime" % flinkVersion
+  "org.apache.flink" %% "flink-runtime" % flinkVersion,
+  "com.typesafe"      % "config"      % "1.4.0",
+  "io.circe" %% "circe-core"  % "0.11.1",
+  "io.circe" %% "circe-generic"  % "0.11.1",
+  "io.circe" %% "circe-parser" % "0.11.1",
+  "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.12.0"
 )
