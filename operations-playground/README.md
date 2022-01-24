@@ -57,4 +57,5 @@ To stop the playground, run the following command
 ```bash
 docker-compose down
 ```
-
+docker-compose exec broker kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic input
+docker-compose exec kafka kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic input

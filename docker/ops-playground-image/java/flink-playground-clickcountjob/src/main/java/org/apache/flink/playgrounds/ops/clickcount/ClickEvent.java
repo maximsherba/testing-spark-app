@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.flink.playgrounds.ops.clickcount.records;
+package org.apache.flink.playgrounds.ops.clickcount;
 
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonFormat;
 

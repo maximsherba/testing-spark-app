@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.flink.playgrounds.ops.clickcount.records;
+package org.apache.flink.playgrounds.ops.clickcount;
+
 
 import org.apache.flink.streaming.connectors.kafka.KafkaSerializationSchema;
 
@@ -27,24 +28,24 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import javax.annotation.Nullable;
 
 /**
- * A Kafka {@link KafkaSerializationSchema} to serialize {@link ClickEvent}s as JSON.
+ * A Kafka {@link KafkaSerializationSchema} to serialize {@link ClickEventStatistics}s as JSON.
  *
  */
-public class ClickEventSerializationSchema implements KafkaSerializationSchema<ClickEvent> {
+public class ClickEventStatisticsSerializationSchema implements KafkaSerializationSchema<ClickEventStatistics> {
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 	private String topic;
 
-	public ClickEventSerializationSchema(){
+	public ClickEventStatisticsSerializationSchema(){
 	}
 
-	public ClickEventSerializationSchema(String topic) {
+	public ClickEventStatisticsSerializationSchema(String topic) {
 		this.topic = topic;
 	}
 
 	@Override
 	public ProducerRecord<byte[], byte[]> serialize(
-			final ClickEvent message, @Nullable final Long timestamp) {
+			final ClickEventStatistics message, @Nullable final Long timestamp) {
 		try {
 			//if topic is null, default topic will be used
 			return new ProducerRecord<>(topic, objectMapper.writeValueAsBytes(message));

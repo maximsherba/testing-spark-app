@@ -1,22 +1,14 @@
 package org.apache.flink.playgrounds.ops.clickcount;
 
 import com.datastax.driver.mapping.Mapper;
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.playgrounds.ops.clickcount.dao.model.ClickEventPOJO;
-import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
-import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventDeserializationSchema;
-import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventStatistics;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.cassandra.CassandraSink;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
-import org.apache.flink.util.Collector;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
@@ -43,7 +35,6 @@ public class ClickEventCount {
 
 
 		String inputTopic = params.get("input-topic", "input");
-		String outputTopic = params.get("output-topic", "output");
 		String brokers = params.get("bootstrap.servers", "localhost:9092");
 		Properties kafkaProps = new Properties();
 		kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);

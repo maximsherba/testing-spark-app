@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.flink.playgrounds.ops.clickcount.records;
+package org.apache.flink.playgrounds.ops.clickcount;
 
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;

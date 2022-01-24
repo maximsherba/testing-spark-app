@@ -1,23 +1,53 @@
 version: "2.1"
 services:
+  client:
+    build: ../docker/ops-playground-image
+    image: apache/flink-ops-playground:1-FLINK-1.12-scala_2.11
+    volumes:
+      - ./conf:/opt/flink/conf
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
   clickevent-generator:
     image: apache/flink-ops-playground:1-FLINK-1.12-scala_2.11
-    command: "java -classpath /opt/ClickCountJob.jar:/opt/flink/lib/* org.apache.flink.playgrounds.ops.clickcount.ClickEventGenerator --bootstrap.servers kafka:9092 --topic input"
+    command: "java -classpath /opt/ClickCountJob.jar:/opt/flink/lib/* org.apache.flink.playgrounds.ops.clickcount.ClickEventGenerator --bootstrap.servers broker:9092 --topic input"
     depends_on:
-      - kafka
+      - broker
   zookeeper:
-    image: wurstmeister/zookeeper:3.4.6
-  kafka:
-    image: wurstmeister/kafka:2.12-2.2.1
-    environment:
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
-      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-      KAFKA_CREATE_TOPICS: "input:2:1, output:2:1"
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    image: confluentinc/cp-zookeeper:5.5.0
+    hostname: zookeeper
     ports:
-      - 9094:9094
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  broker:
+      image: confluentinc/cp-kafka:5.5.0
+      hostname: broker
+      depends_on:
+        - zookeeper
+      ports:
+        - "29092:29092"
+      environment:
+        KAFKA_BROKER_ID: 1
+        KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_HOST://localhost:29092
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  create-topics:
+      image: confluentinc/cp-kafka:5.5.0
+      hostname: create-topics
+      container_name: create-topics
+      depends_on:
+        - broker
+      command: "bash -c 'echo Waiting for Kafka to be ready... && \
+                    cub kafka-ready -b broker:9092 1 20 && \
+                    kafka-topics --create --if-not-exists --zookeeper zookeeper:2181 --partitions 1 --replication-factor 1 --topic input'"
+      environment:
+        KAFKA_BROKER_ID: ignored
+        KAFKA_ZOOKEEPER_CONNECT: ignored
   cassandra:
     image: cassandra:3
     container_name: cassandra

@@ -1,11 +1,9 @@
-package org.apache.flink.playgrounds.ops.clickcount.dao.model;
+package org.apache.flink.playgrounds.ops.clickcount;
 
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.Table;
-import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
 
 import java.util.Date;
-import java.util.Objects;
 
 @Table(keyspace = "example", name = "clickevent")
 public class ClickEventPOJO {

@@ -19,8 +19,6 @@
 package org.apache.flink.playgrounds.ops.clickcount;
 
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
-import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventSerializationSchema;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
