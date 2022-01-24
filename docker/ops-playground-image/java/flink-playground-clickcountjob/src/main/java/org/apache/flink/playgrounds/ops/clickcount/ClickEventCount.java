@@ -1,60 +1,28 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.apache.flink.playgrounds.ops.clickcount;
 
+import com.datastax.driver.mapping.Mapper;
+import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.playgrounds.ops.clickcount.functions.BackpressureMap;
-import org.apache.flink.playgrounds.ops.clickcount.functions.ClickEventStatisticsCollector;
-import org.apache.flink.playgrounds.ops.clickcount.functions.CountingAggregator;
+import org.apache.flink.playgrounds.ops.clickcount.dao.model.ClickEventPOJO;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventDeserializationSchema;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventStatistics;
-import org.apache.flink.playgrounds.ops.clickcount.records.ClickEventStatisticsSerializationSchema;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.connectors.cassandra.CassandraSink;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
-
+import org.apache.flink.util.Collector;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-/**
- * A simple streaming job reading {@link ClickEvent}s from Kafka, counting events per 15 seconds and
- * writing the resulting {@link ClickEventStatistics} back to Kafka.
- *
- * <p> It can be run with or without checkpointing and with event time or processing time semantics.
- * </p>
- *
- * <p>The Job can be configured via the command line:</p>
- * * "--checkpointing": enables checkpointing
- * * "--event-time": set the StreamTimeCharacteristic to EventTime
- * * "--backpressure": insert an operator that causes periodic backpressure
- * * "--input-topic": the name of the Kafka Topic to consume {@link ClickEvent}s from
- * * "--output-topic": the name of the Kafka Topic to produce {@link ClickEventStatistics} to
- * * "--bootstrap.servers": comma-separated list of Kafka brokers
- *
- */
 public class ClickEventCount {
 
 	public static final String CHECKPOINTING_OPTION = "checkpointing";
@@ -73,6 +41,7 @@ public class ClickEventCount {
 
 		boolean inflictBackpressure = params.has(BACKPRESSURE_OPTION);
 
+
 		String inputTopic = params.get("input-topic", "input");
 		String outputTopic = params.get("output-topic", "output");
 		String brokers = params.get("bootstrap.servers", "localhost:9092");
@@ -90,28 +59,16 @@ public class ClickEventCount {
 				}
 			});
 
-		if (inflictBackpressure) {
-			// Force a network shuffle so that the backpressure will affect the buffer pools
-			clicks = clicks
-				.keyBy(ClickEvent::getPage)
-				.map(new BackpressureMap())
-				.name("Backpressure");
-		}
+		DataStream<ClickEventPOJO> clicksWrite = clicks
+				.map(x -> new ClickEventPOJO(x.getTimestamp(), x.getPage()));
 
-		DataStream<ClickEventStatistics> statistics = clicks
-			.keyBy(ClickEvent::getPage)
-			.timeWindow(WINDOW_SIZE)
-			.aggregate(new CountingAggregator(),
-				new ClickEventStatisticsCollector())
-			.name("ClickEvent Counter");
 
-		statistics
-			.addSink(new FlinkKafkaProducer<>(
-				outputTopic,
-				new ClickEventStatisticsSerializationSchema(outputTopic),
-				kafkaProps,
-				FlinkKafkaProducer.Semantic.AT_LEAST_ONCE))
-			.name("ClickEventStatistics Sink");
+		CassandraSink.addSink(clicksWrite)
+				.setHost("127.0.0.1")
+//				.setHost("cassandra")
+				.setMapperOptions(() -> new Mapper.Option[]{Mapper.Option.saveNullFields(true)})
+				.build();
+
 
 		env.execute("Click Event Count");
 	}
