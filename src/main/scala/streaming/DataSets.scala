@@ -1,5 +1,6 @@
 package streaming
 
+
 import org.apache.spark.sql.functions.{col, expr}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.apache.spark.sql.functions._
@@ -8,8 +9,7 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType, Timestam
 
 import scala.concurrent.duration.DurationInt
 
-
-object First extends App {
+object DataSets extends App {
 
   val spark = SparkSession.builder()
     .appName("Integrating Kafka")
@@ -43,7 +43,7 @@ object First extends App {
     in
       .select(expr("cast(value as string) as actualValue"))
       .as[String]
-//      .map{ value => }
+  //      .map{ value => }
 
 
   def writeDfToCassandra(in: DataFrame): Unit =
