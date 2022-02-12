@@ -25,12 +25,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static org.apache.flink.playgrounds.ops.clickcount.ClickEventCount.WINDOW_SIZE;
 
@@ -88,6 +83,8 @@ public class ClickEventGenerator {
 
 	static class ClickIterator  {
 
+		private static final int NUMBER_OF_USERS = 5;
+		private static final int MAX_DURATION = 200;
 		private Map<String, Long> nextTimestampPerKey;
 		private int nextPageIndex;
 
@@ -98,7 +95,9 @@ public class ClickEventGenerator {
 
 		ClickEvent next() {
 			String page = nextPage();
-			return new ClickEvent(nextTimestamp(page), page);
+			long userId = nextUserId();
+			long duration = nextDuration();
+			return new ClickEvent(nextTimestamp(page), page, userId, duration);
 		}
 
 		private Date nextTimestamp(String page) {
@@ -116,5 +115,18 @@ public class ClickEventGenerator {
 			}
 			return nextPage;
 		}
+
+		private long nextUserId() {
+			Random rnd = new Random();
+			return 2013000000 + rnd.nextInt(NUMBER_OF_USERS);
+
+		}
+
+		private long nextDuration() {
+			Random rnd = new Random();
+			return rnd.nextInt(MAX_DURATION);
+
+		}
+
 	}
 }
