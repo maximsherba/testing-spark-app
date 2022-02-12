@@ -9,6 +9,7 @@ val vegasVersion = "0.3.11"
 val postgresVersion = "42.2.2"
 val scalaTestVersion = "3.2.1"
 val flinkVersion = "1.12.1"
+val cassandraConnectorVersion = "3.0.0"
 
 resolvers ++= Seq(
   "bintray-spark-packages" at "https://dl.bintray.com/spark-packages/maven",
@@ -35,7 +36,12 @@ libraryDependencies ++= Seq(
   "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core"   % "2.12.0",
   "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.12.0",
 
-  // logging
+  "com.datastax.spark" %% "spark-cassandra-connector" % cassandraConnectorVersion,
+  "org.postgresql" % "postgresql" % postgresVersion,
+
+  "joda-time" % "joda-time" % "2.10.13",
+
+// logging
   "org.apache.logging.log4j" % "log4j-api" % "2.4.1",
   "org.apache.logging.log4j" % "log4j-core" % "2.4.1",
   // postgres for DB connectivity

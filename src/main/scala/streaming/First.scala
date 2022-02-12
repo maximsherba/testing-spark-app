@@ -10,7 +10,6 @@ import scala.concurrent.duration.DurationInt
 
 
 object First extends App {
-
   val spark = SparkSession.builder()
     .appName("Integrating Kafka")
     .master("local[2]")
@@ -28,11 +27,11 @@ object First extends App {
     .load()
 
 
-  def transform(in: DataFrame): DataFrame = in
-    .select(expr("cast(value as string) as actualValue"))
-    .select(from_json(col("actualValue"), schema).as("page")) // composite column (struct)
-    .selectExpr("page.timestamp as timestamp", "page.page as page")
-    .select(date_format(to_timestamp(col("timestamp"), "dd-MM-yyyy HH:mm:ss:SSS"), "HH:mm:ss:SSS").as("time"), col("page"))
+//  def transform(in: DataFrame): DataFrame = in
+//    .select(expr("cast(value as string) as actualValue"))
+//    .select(from_json(col("actualValue"), schema).as("page")) // composite column (struct)
+//    .selectExpr("page.timestamp as timestamp", "page.page as page")
+//    .select(date_format(to_timestamp(col("timestamp"), "dd-MM-yyyy HH:mm:ss:SSS"), "HH:mm:ss:SSS").as("time"), col("page"))
 
 
   case class Record(timestampType: TimestampType, pageType: String)
@@ -63,13 +62,9 @@ object First extends App {
       .awaitTermination()
 
 
-
   val frame = readFromKafka()
 
   val transformed = transformToCaseClass(frame)
 
-
   writeDsToCassandra(transformed)
-
-
 }
