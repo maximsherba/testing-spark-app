@@ -44,10 +44,13 @@ object DataSets extends App {
       )
 
   case class ClickRecord(timestamp: String, page: String, userId: Long, duration: Int)
+
   case class ClickBulk(pageType: String, count: Int, totalDuration: Int)
+
   case class ClickAverage(page: String, averageDuration: Double)
 
   import spark.implicits._
+
   implicit val codec: JsonValueCodec[ClickRecord] = JsonCodecMaker.make[ClickRecord]
 
   def transformToCaseClass(in: DataFrame) =
@@ -56,12 +59,12 @@ object DataSets extends App {
       .as[String]
       .map(readFromString[ClickRecord](_))
 
-  def updateCountState(
-      postType: String,
-      group: Iterator[ClickRecord],
-      state: GroupState[ClickBulk]
-  ): ClickAverage = {
-    val prevState = if (state.exists) state.get else ClickBulk(postType, 0, 0)
+  def updateCountState( // вызывается один раз для каждой группы в микробатче
+                        postKey: String,
+                        group: Iterator[ClickRecord],
+                        state: GroupState[ClickBulk] // не мб null IllegalArgumentException
+                      ): ClickAverage = { // на выходе только одна запись
+    val prevState = if (state.exists) state.get else ClickBulk(postKey, 0, 0)
 
     val totalAggData = group.foldLeft((0, 0)) {
       case (acc, rec) =>
@@ -71,10 +74,10 @@ object DataSets extends App {
 
     val (totalCount, totalDuration) = totalAggData
     val newPostBulk =
-      ClickBulk(postType, prevState.count + totalCount, prevState.totalDuration + totalDuration)
+      ClickBulk(postKey, prevState.count + totalCount, prevState.totalDuration + totalDuration)
 
-    state.update(newPostBulk)
-    ClickAverage(postType, newPostBulk.totalDuration * 1.0 / newPostBulk.count)
+    state.update(newPostBulk) // потокобезопасная
+    ClickAverage(postKey, newPostBulk.totalDuration * 1.0 / newPostBulk.count)
   }
 
   val frame = readFromKafka()
