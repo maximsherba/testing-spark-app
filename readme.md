@@ -97,3 +97,16 @@ _(Пример: можно построить витрину со следующ
 
 ### ДЗ основная инструкция и задания к занятию по Flink:
 !!!!! ВНИМАНИЕ, для корректной работы необходимо сделать reimport dependency 
+
+
+docker system prune -a --volumes
+
+docker exec -ti 
+
+CASSANDRA
+
+nodetool status
+
+nodetool tpstats
+
+nodetool flush
