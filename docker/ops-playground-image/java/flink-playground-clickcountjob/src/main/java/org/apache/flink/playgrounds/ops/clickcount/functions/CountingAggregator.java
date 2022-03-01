@@ -18,7 +18,7 @@
 package org.apache.flink.playgrounds.ops.clickcount.functions;
 
 import org.apache.flink.api.common.functions.AggregateFunction;
-import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
+import org.apache.flink.playgrounds.ops.clickcount.ClickEvent;
 
 /**
  * An {@link AggregateFunction} which simply counts {@link ClickEvent}s.

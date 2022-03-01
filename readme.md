@@ -13,7 +13,21 @@
 11) Скачать и установить docker-compose
 12) Из корневой папки проекта запустить сделать запуск - docker-compose up
 
+cd ..
+docker-compose exec broker kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic input
 
+
+docker-compose exec kafka kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic input
+
+docker-compose exec create-topics kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic input
+
+
+docker-compose exec broker -ti bash
+
+find /  -name 'kafka-console-consumer.*'
+
+
+find . -type f -name 'kafka-console-consumer.*'
 
 
 ### ДЗ основная инструкция и задания к занятию по Spark Data API:
@@ -83,3 +97,16 @@ _(Пример: можно построить витрину со следующ
 
 ### ДЗ основная инструкция и задания к занятию по Flink:
 !!!!! ВНИМАНИЕ, для корректной работы необходимо сделать reimport dependency 
+
+
+docker system prune -a --volumes
+
+docker exec -ti 
+
+CASSANDRA
+
+nodetool status
+
+nodetool tpstats
+
+nodetool flush

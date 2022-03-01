@@ -19,7 +19,7 @@
 package org.apache.flink.playgrounds.ops.clickcount.functions;
 
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
+import org.apache.flink.playgrounds.ops.clickcount.ClickEvent;
 
 import java.time.LocalTime;
 
