@@ -11,7 +11,8 @@ object WindowFunction extends App {
     .appName("Taxi Big Data Application")
     .getOrCreate()
 
-  val simpleData = Seq(("James", "Sales", 3000), ("Michael", "Sales", 4600), ("Robert", "Sales", 4100),
+  val simpleData = Seq(("James", "Sales", 3000), ("John", "ServiceDesk", 4600), ("Michael", "Sales", 4600),
+    ("Robert", "Sales", 4100),
     ("Maria", "Finance", 3000), ("James", "Sales", 3000), ("Scott", "Finance", 3300),
     ("Jen", "Finance", 3900), ("Jeff", "Marketing", 3000), ("Kumar", "Marketing", 2000), ("Saif", "Sales", 4100)
   )
@@ -40,5 +41,10 @@ object WindowFunction extends App {
     //    .withColumn("rank", rank().over(windowSpec))
     .withColumn("rank", dense_rank().over(windowSpec))
     .show()
+
+  /**
+   * 1. Find second salary 4100
+   *
+   * */
 
 }
