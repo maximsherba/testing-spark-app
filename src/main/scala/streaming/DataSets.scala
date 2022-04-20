@@ -15,7 +15,7 @@ object DataSets extends App {
   val spark = SparkSession
     .builder()
     .appName("Integrating Kafka")
-    .master("local[2]")
+    .master("local")
     .getOrCreate()
 
   val schema = StructType(
@@ -44,9 +44,7 @@ object DataSets extends App {
       )
 
   case class ClickRecord(timestamp: String, page: String, userId: Long, duration: Int)
-
   case class ClickBulk(pageType: String, count: Int, totalDuration: Int)
-
   case class ClickAverage(page: String, averageDuration: Double)
 
   import spark.implicits._
@@ -82,20 +80,80 @@ object DataSets extends App {
 
   val frame = readFromKafka()
 
-  val transformed = transformToCaseClass(frame)
+  val transformed: Dataset[ClickRecord] = transformToCaseClass(frame)
 
-  val averageDS: Dataset[ClickAverage] = transformed
-    .groupByKey(_.page)
-    .mapGroupsWithState(GroupStateTimeout.NoTimeout())(updateCountState)
+  val transformed2 = transform(frame)
 
-  averageDS
-    .writeStream
-    .outputMode("update")
-    .foreachBatch { (batch: Dataset[ClickAverage], _: Long) =>
-      batch.show()
-    }
-    .trigger(Trigger.ProcessingTime(2.seconds))
-    .start()
-    .awaitTermination()
+    println(transformed2.isStreaming)
 
+//    transformed2.writeStream
+//      .trigger(Trigger.ProcessingTime(2.seconds))
+//      .option("checkpointLocation", "src/main/resources/data/checkpoints")
+//      .format("parquet")
+//      .start("src/main/resources/data/out")
+//      .awaitTermination()
+
+    transformed
+          .writeStream
+          .outputMode("update")
+          .foreachBatch { (batch: Dataset[ClickRecord], _: Long) =>
+            batch.show()
+            batch.isStreaming // false
+            batch.write
+          }
+          .trigger(Trigger.Once())
+          .start()
+          .awaitTermination()
+
+  transformed
+      .writeStream
+      .format("console")
+      .outputMode("append")
+      .trigger(Trigger.Once())
+      .start()
+      .awaitTermination()
+
+  //
+//  val averageDS: Dataset[ClickAverage] = transformed
+//    .groupByKey(_.page)
+//    .mapGroupsWithState(GroupStateTimeout.NoTimeout())(updateCountState)
+//
+//  averageDS
+//    .writeStream
+//    .outputMode("update")
+//    .foreachBatch { (batch: Dataset[ClickAverage], _: Long) =>
+//      batch.show()
+//    }
+//    .trigger(Trigger.ProcessingTime(1.seconds))
+//    .start()
+//    .awaitTermination()
+
+  /**
+   * Batch1
+   *  +------+------------------+
+   * |  page|   averageDuration|
+   * +------+------------------+
+   * |/about|105.73825503355705|
+   * | /shop| 91.11333333333333|
+   * | /news|102.57046979865771|
+   * |/index| 98.02666666666667|
+   * | /jobs|111.31333333333333|
+   * | /help|101.02013422818791|
+   * +------+------------------+
+   *
+   * Batch2 about + shop + help
+   *  +------+------------------+
+   * |  page|   averageDuration|
+   * +------+------------------+
+   * |/about|105.73825503355705|
+   * | /shop| **** 91.11333333333333|
+   * | /about|*** 102.57046979865771|
+   * |/index| 98.02666666666667|
+   * | /jobs|111.31333333333333|
+   * | /help| *** 101.02013422818791|
+   * +------+------------------+
+   *
+   *
+   *
+   * */
 }
