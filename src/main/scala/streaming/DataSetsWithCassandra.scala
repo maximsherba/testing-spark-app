@@ -90,6 +90,10 @@ object DataSetsWithCassandra extends App {
 
   transformedDS.writeStream
     .foreachBatch { (batch: Dataset[ClickRecord], _: Long) =>
+
+      batch
+        .show(20, false)
+
       batch
         .select($"userId", $"page", $"duration", $"timestamp")
         .write

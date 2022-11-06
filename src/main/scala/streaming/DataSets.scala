@@ -93,25 +93,25 @@ object DataSets extends App {
 //      .start("src/main/resources/data/out")
 //      .awaitTermination()
 
-    transformed
-          .writeStream
-          .outputMode("update")
-          .foreachBatch { (batch: Dataset[ClickRecord], _: Long) =>
-            batch.show()
-            batch.isStreaming // false
-            batch.write
-          }
-          .trigger(Trigger.Once())
-          .start()
-          .awaitTermination()
-
-  transformed
-      .writeStream
-      .format("console")
-      .outputMode("append")
-      .trigger(Trigger.Once())
-      .start()
-      .awaitTermination()
+//    transformed
+//          .writeStream
+//          .outputMode("update")
+//          .foreachBatch { (batch: Dataset[ClickRecord], _: Long) =>
+//            batch.show()
+//            batch.isStreaming // false
+//            batch.write
+//          }
+//          .trigger(Trigger.Once())
+//          .start()
+//          .awaitTermination()
+//
+//  transformed
+//      .writeStream
+//      .format("console")
+//      .outputMode("append")
+//      .trigger(Trigger.Once())
+//      .start()
+//      .awaitTermination()
 
   //
 //  val averageDS: Dataset[ClickAverage] = transformed
