@@ -24,7 +24,7 @@ object TestingSparkApp_DataSet extends App {
   import homework2.Model._
   import spark.implicits._
 
-  def parquet2DataSet(path: String)(implicit spark: SparkSession): Dataset[TaxiRide] = {
+  def parquet2DataSet(path: String)(implicit spark: SparkSession) = {
     spark
       .read
       .parquet(path)
@@ -33,7 +33,7 @@ object TestingSparkApp_DataSet extends App {
       .as[TaxiRide]
   }
 
-  def csv2DataSet(path: String)(implicit spark: SparkSession): Dataset[TaxiZone] = {
+  def csv2DataSet(path: String)(implicit spark: SparkSession) = {
     spark.read
       .option("header", "true")
       .option("inferSchema", "true")
@@ -72,6 +72,13 @@ object TestingSparkApp_DataSet extends App {
 
     resultDS
       .write.mode(SaveMode.Overwrite).jdbc(url = url, table, connectionProperties)
+  }
+
+  def testFunc(path: String)(implicit spark: SparkSession) = {
+    spark
+      .read
+      .parquet(path)
+      .as[TaxiRide] // Comment this line to avoid NullPointerException
   }
 
   val taxiDS = parquet2DataSet("src/main/resources/data/yellow_taxi_jan_25_2018")

@@ -3,7 +3,7 @@
 //построенную с помощью RDD. Пример src/test/scala/lesson2/SimpleUnitTest.scala
 package homework5
 
-import homework2.Model
+import homework2.Model._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel._
@@ -15,7 +15,6 @@ object TestingSparkApp_RDD extends App {
     .config("spark.master", "local[2]")
     .getOrCreate()
 
-  import Model._
   import spark.implicits._
 
   def Parquet2RDD(path: String)(implicit spark: SparkSession): RDD[TaxiRide] = {
